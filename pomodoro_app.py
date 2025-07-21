@@ -10,20 +10,20 @@ TODO:
 3) + Set work session lenght
 4) + Set short break lenght
 5) + Set long break lenght
-6) Reset to standart session
-7) Show notifications
+6) + Reset to standart session
+7) System notifications
+8) Stop during sessions
 
 ver1:
-1) Show timer with  defaults
-2) Start timer
-3) Stop timer
-4) Start over
-
+1) + Show timer with defaults
+2) + Start timer with custom values
+3) Stop timer (not program!)
+4) Start over (?)
 """
 
 def clear_console():
     # clearing the console
-    os.system('clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def show_notification():
@@ -32,12 +32,13 @@ def show_notification():
 
 def countdown(minutes: int, session: str):
     seconds = minutes * 60
-    while seconds > 0:
+    while seconds >= 0:
         mins, secs = divmod(seconds, 60)
         sys.stdout.write(f"\r{session}: {mins:02d}:{secs:02d}")
         sys.stdout.flush()
         time.sleep(1)
         seconds -= 1
+    print(f"\n{session} ended!")
 
 
 def change_cycles_amount() -> int:
@@ -85,14 +86,15 @@ def timer_main():
     short_break_minutes = 10
     long_break_minutes = 20
     cycles = 3
-    
+    cycles_passed = 0
+
     while True:
         print("Pomodoro CLI timer")
         print("------------------")
         print(f"Work session: {work_minutes} min")
         print(f"Short break: {short_break_minutes} min" )
         print(f"Long break (after all cycles): {long_break_minutes} min")
-        print(f"Cycles: {cycles}")
+        print(f"Total cycles: {cycles} | Left: {cycles - cycles_passed} ")
         print("------------------")
         print("Actions:")
         print("1) Start work session")
@@ -109,11 +111,19 @@ def timer_main():
         except Exception:
             print("Error! Input correct number")
             continue
+        print("------------------")
         
         match choice:
             case 1:
-                pass
-                # countdown(work_minutes, "Work Session")
+                while True:
+                    countdown(work_minutes, "Work session")
+                    if cycles_passed / cycles != 1:
+                        countdown(short_break_minutes, "Short break")
+                        cycles_passed += 1
+                    else:
+                        countdown(long_break_minutes, "Long break")
+                        cycles_passed = 0
+                        break
             case 2:
                 work_minutes, short_break_minutes, long_break_minutes = change_sessions_duration(work_minutes, short_break_minutes,
                 long_break_minutes)
